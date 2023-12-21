@@ -29,8 +29,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFiles("./public/templates/index.html"))
+		tmpl := template.Must(template.ParseFiles(
+			"./pages/_base.html",
+			"./pages/films.html",
+		))
 
 		films := services.GetFilms()
 		genres := services.GetGenres()
@@ -41,13 +46,13 @@ func main() {
 			"Count":  len(films),
 		}
 
-		tmpl.Execute(w, filmList)
+		tmpl.ExecuteTemplate(w, "base", filmList)
 	})
 
 	http.HandleFunc("/film-count", func(w http.ResponseWriter, r *http.Request) {
 		films := services.GetFilms()
 
-		tmpl := template.Must(template.ParseFiles("./public/templates/index.html"))
+		tmpl := template.Must(template.ParseFiles("./ui/html/pages/films.html"))
 		tmpl.ExecuteTemplate(w, "film-count", map[string]interface{}{
 			"Count": len(films),
 		})
@@ -66,7 +71,7 @@ func main() {
 				w.Header().Set("HX-Trigger", "films-changed")
 			}
 
-			tmpl := template.Must(template.ParseFiles("./public/templates/index.html"))
+			tmpl := template.Must(template.ParseFiles("./ui/html/pages/films.html"))
 			tmpl.ExecuteTemplate(w, "film-list-element", film)
 		}
 	})
@@ -84,7 +89,7 @@ func main() {
 			"Films": films,
 		}
 
-		tmpl := template.Must(template.ParseFiles("./public/templates/index.html"))
+		tmpl := template.Must(template.ParseFiles("./ui/html/pages/films.html"))
 		tmpl.ExecuteTemplate(w, "film-list", filmList)
 	})
 

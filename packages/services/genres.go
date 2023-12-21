@@ -12,7 +12,7 @@ func GetGenres() []structs.Genre {
 
 	if genres, err = database.GetGenres(); err != nil {
 		fmt.Printf("Erreur à la requête de genres: %s", err.Error())
-		return nil
+		return []structs.Genre{}
 	}
 
 	return genres

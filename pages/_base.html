@@ -1,0 +1,22 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/htmx.org@1.9.9"
+    integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/static/css/tailwind.css" type="text/css">
+  <title>{{template "title" .}}</title>
+</head>
+
+<body class="bg-slate-100">
+  <main>
+    {{template "main" .}}
+  </main>
+</body>
+
+</html>
+{{end}}
