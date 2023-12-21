@@ -52,7 +52,7 @@ func main() {
 	http.HandleFunc("/film-count", func(w http.ResponseWriter, r *http.Request) {
 		films := services.GetFilms()
 
-		tmpl := template.Must(template.ParseFiles("./ui/html/pages/films.html"))
+		tmpl := template.Must(template.ParseFiles("./pages/films.html"))
 		tmpl.ExecuteTemplate(w, "film-count", map[string]interface{}{
 			"Count": len(films),
 		})
@@ -71,7 +71,7 @@ func main() {
 				w.Header().Set("HX-Trigger", "films-changed")
 			}
 
-			tmpl := template.Must(template.ParseFiles("./ui/html/pages/films.html"))
+			tmpl := template.Must(template.ParseFiles("./pages/films.html"))
 			tmpl.ExecuteTemplate(w, "film-list-element", film)
 		}
 	})
@@ -89,7 +89,7 @@ func main() {
 			"Films": films,
 		}
 
-		tmpl := template.Must(template.ParseFiles("./ui/html/pages/films.html"))
+		tmpl := template.Must(template.ParseFiles("./pages/films.html"))
 		tmpl.ExecuteTemplate(w, "film-list", filmList)
 	})
 
