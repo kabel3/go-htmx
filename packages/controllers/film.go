@@ -70,9 +70,8 @@ func UpdateFilm(c *gin.Context) {
 
 	if title != "" && director != "" {
 		genreId, _ := strconv.Atoi(genre)
-		updated := database.UpdateFilm(filmId, title, director, genreId)
 
-		if updated {
+		if updated := database.UpdateFilm(filmId, title, director, genreId); updated {
 			c.Header("HX-Location", "/")
 		}
 	}
@@ -90,4 +89,16 @@ func DeleteFilm(c *gin.Context) {
 	c.HTML(http.StatusOK, "film-list", map[string]interface{}{
 		"Films": films,
 	})
+}
+
+func StarFilm(c *gin.Context) {
+	filmId, _ := strconv.Atoi(c.Request.URL.Query().Get("id"))
+	starred, _ := strconv.ParseBool(c.Request.URL.Query().Get("starred"))
+
+	if updated := database.ToggleStarredFilm(filmId); updated {
+		c.HTML(http.StatusOK, "film-starred", gin.H{
+			"Id":      filmId,
+			"Starred": starred,
+		})
+	}
 }

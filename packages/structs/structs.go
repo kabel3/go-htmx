@@ -6,6 +6,7 @@ type Film struct {
 	Director string
 	Genre    string
 	GenreId  int
+	Starred  bool
 }
 
 type Genre struct {

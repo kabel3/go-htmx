@@ -31,7 +31,8 @@ func InitDatabase() error {
 		id 				INTEGER PRIMARY KEY,
 		title 		TEXT NOT NULL,
 		director	TEXT NOT NULL,
-		genreId 	INTEGER NOT NULL
+		genreId 	INTEGER NOT NULL,
+		starred		INTEGER NOT NULL DEFAULT 0 CHECK(starred IN (0,1))
 	)`
 
 	createGenresTable := `CREATE TABLE IF NOT EXISTS genres (

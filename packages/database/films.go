@@ -39,7 +39,7 @@ func GetFilms() []structs.Film {
 		return []structs.Film{}
 	}
 
-	rows, err := db.Query("SELECT f.id, title, director, g.description FROM films f INNER JOIN genres g ON g.id = f.genreId")
+	rows, err := db.Query("SELECT f.id, title, director, g.description, starred FROM films f INNER JOIN genres g ON g.id = f.genreId")
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -53,7 +53,7 @@ func GetFilms() []structs.Film {
 	for rows.Next() {
 		var film structs.Film
 
-		if err := rows.Scan(&film.Id, &film.Title, &film.Director, &film.Genre); err != nil {
+		if err := rows.Scan(&film.Id, &film.Title, &film.Director, &film.Genre, &film.Starred); err != nil {
 			fmt.Println(err.Error())
 			return films
 		}
@@ -129,6 +129,30 @@ func UpdateFilm(filmId int, title string, director string, genreId int) bool {
 	}
 
 	_, err = stmt.Exec(title, director, genreId, filmId)
+	stmt.Close()
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	return true
+}
+
+func ToggleStarredFilm(filmId int) bool {
+	if err := OpenDatabase(); err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	stmt, err := db.Prepare("UPDATE films SET starred = ((starred | 1) - (starred & 1)) WHERE id = ?")
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	_, err = stmt.Exec(filmId)
 	stmt.Close()
 
 	if err != nil {

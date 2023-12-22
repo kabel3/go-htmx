@@ -39,6 +39,7 @@ func main() {
 	r.PUT("/api/film", controllers.AddFilm)
 	r.POST("/api/film", controllers.UpdateFilm)
 	r.DELETE("/api/film", controllers.DeleteFilm)
+	r.POST("/api/film/star", controllers.StarFilm)
 
 	log.Fatal(r.Run("localhost:8080"))
 }

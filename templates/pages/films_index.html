@@ -4,20 +4,24 @@
 <div class="container mx-auto">
     <div class="flex flex-wrap gap-2">
         <div class="p-8 my-4 basis-3/5 bg-white border">
-            <h1 class="px-6 py-4 text-3xl font-bold text-gray-900">
-                Liste de films
-                <span hx-get="api/films/count" hx-trigger="films-changed from:body" hx-target="this"
-                    hx-swap="innerHTML">
-                    {{ block "film-count" . }}
-                    ({{ .Count }})
-                    {{ end }}
-                </span>
-            </h1>
+            <div class="px-6 py-4">
+                <h1 class="text-3xl font-bold text-gray-900">
+                    Liste de films
+                    <span hx-get="api/films/count" hx-trigger="films-changed from:body" hx-target="this"
+                        hx-swap="innerHTML">
+                        {{ block "film-count" . }}
+                        ({{ .Count }})
+                        {{ end }}
+                    </span>
+                </h1>
+            </div>
+            
 
             {{ block "film-list" . }}
             <table class="w-full border-collapse bg-white text-left text-sm text-gray-700" id="film-table">
                 <thead>
                     <tr>
+                        <th scope="col" class="px-6 py-4 font-medium text-gray-900"></th>
                         <th scope="col" class="px-6 py-4 font-medium text-gray-900">Titre</th>
                         <th scope="col" class="px-6 py-4 font-medium text-gray-900">Directeur</th>
                         <th scope="col" class="px-6 py-4 font-medium text-gray-900">Genre</th>
@@ -28,6 +32,21 @@
                     {{ range .Films }}
                     {{ block "film-list-element" . }}
                     <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <button id="starredFilm">
+                                {{block "film-starred" .}}
+                                {{if .Starred}}
+                                <div hx-post="/api/film/star?id={{ .Id }}&starred=false" hx-trigger="click" hx-target="this" hx-swap="outerHTML">
+                                    <ion-icon name="star" class="h-6 w-6"></ion-icon>
+                                </div>
+                                {{else}}
+                                <div hx-post="/api/film/star?id={{ .Id }}&starred=true" hx-trigger="click" hx-target="this" hx-swap="outerHTML">
+                                    <ion-icon name="star-outline" class="h-6 w-6"></ion-icon>
+                                </div>
+                                {{end}}
+                                {{end}}
+                            </button>
+                        </td>
                         <td class="px-6 py-4">{{ .Title }}</td>
                         <td class="px-6 py-4">{{ .Director }}</td>
                         <td class="px-6 py-4">{{ .Genre }}</td>
