@@ -5,6 +5,7 @@ type Film struct {
 	Title    string
 	Director string
 	Genre    string
+	GenreId  int
 }
 
 type Genre struct {
@@ -13,6 +14,8 @@ type Genre struct {
 }
 
 type Option struct {
-	Id    string
-	Value string
+	Id       string
+	Value    string
+	Text     string
+	Selected bool
 }

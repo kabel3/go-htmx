@@ -26,15 +26,17 @@ func SeedDefaultGenres() error {
 	return err
 }
 
-func GetGenres() ([]structs.Genre, error) {
+func GetGenres() []structs.Genre {
 	if err := OpenDatabase(); err != nil {
-		return nil, err
+		fmt.Println(err.Error())
+		return []structs.Genre{}
 	}
 
 	rows, err := db.Query("SELECT id, description FROM genres")
 
 	if err != nil {
-		return nil, err
+		fmt.Println(err.Error())
+		return []structs.Genre{}
 	}
 
 	defer rows.Close()
@@ -45,17 +47,19 @@ func GetGenres() ([]structs.Genre, error) {
 		var genre structs.Genre
 
 		if err := rows.Scan(&genre.Id, &genre.Description); err != nil {
-			return genres, err
+			fmt.Println(err.Error())
+			return genres
 		}
 
 		genres = append(genres, genre)
 	}
 
 	if err = rows.Err(); err != nil {
-		return genres, err
+		fmt.Println(err.Error())
+		return genres
 	}
 
-	return genres, nil
+	return genres
 }
 
 func GetGenre(genreId int) structs.Genre {

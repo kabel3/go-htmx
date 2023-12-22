@@ -1,0 +1,95 @@
+{{define "title"}}HTMX | Liste des films{{end}}
+
+{{template "header"}}
+<div class="container mx-auto">
+    <div class="flex flex-wrap gap-2">
+        <div class="p-8 my-4 basis-3/5 bg-white border">
+            <h1 class="px-6 py-4 text-3xl font-bold text-gray-900">
+                Liste de films
+                <span hx-get="api/films/count" hx-trigger="films-changed from:body" hx-target="this"
+                    hx-swap="innerHTML">
+                    {{ block "film-count" . }}
+                    ({{ .Count }})
+                    {{ end }}
+                </span>
+            </h1>
+
+            {{ block "film-list" . }}
+            <table class="w-full border-collapse bg-white text-left text-sm text-gray-700" id="film-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="px-6 py-4 font-medium text-gray-900">Titre</th>
+                        <th scope="col" class="px-6 py-4 font-medium text-gray-900">Directeur</th>
+                        <th scope="col" class="px-6 py-4 font-medium text-gray-900">Genre</th>
+                        <th scope="col" class="px-6 py-4 font-medium text-gray-900"></th>
+                    </tr>
+                </thead>
+                <tbody id="film-list" class="divide-y divide-gray-100 border-t border-gray-100">
+                    {{ range .Films }}
+                    {{ block "film-list-element" . }}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">{{ .Title }}</td>
+                        <td class="px-6 py-4">{{ .Director }}</td>
+                        <td class="px-6 py-4">{{ .Genre }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex justify-end gap-4">
+                                <button hx-get="/film?id={{ .Id }}" hx-replace-url="true" hx-push-url="true"
+                                    hx-boost="true" hx-target="#content" hx-swap="outerHTML">
+                                    <ion-icon name="create-outline" class="h-6 w-6"></ion-icon>
+                                </button>
+                                <button hx-delete="api/film?id={{ .Id }}" hx-confirm="Êtes-vous sûr?"
+                                    hx-target="#film-table" hx-swap="innerHTML">
+                                    <ion-icon name="trash-outline" class="h-6 w-6"></ion-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {{ end }}
+                    {{ end }}
+                </tbody>
+            </table>
+            {{ end }}
+        </div>
+
+        <div class="p-8 my-4 basis-1/3 bg-white border">
+            <h1 class="px-6 py-4 text-3xl font-bold text-gray-900">Ajouter un film</h1>
+
+            <form class="px-6 py-4" hx-put="api/film" hx-target="#film-list" hx-swap="beforeend">
+                <div class="mb-3">
+                    <label for="title" class="block text-sm font-medium leading-6 text-gray-900">Titre</label>
+
+                    <div class="relative mt-2 rounded-md shadow-sm">
+                        <input type="text" name="title"
+                            class="block w-full rounded-md border-0 py-2 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="director" class="block text-sm font-medium leading-6 text-gray-900">Directeur</label>
+
+                    <div class="relative mt-2 rounded-md shadow-sm">
+                        <input type="text" name="director"
+                            class="block w-full rounded-md border-0 py-2 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-400 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="genre" class="block text-sm font-medium leading-6 text-gray-900">Genre</label>
+
+                    <div class="relative mt-2 rounded-md shadow-sm">
+                        <select id="genre-list" name="genre"
+                            class="block w-full rounded-md border-0 py-2 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                            {{ range .Genres }}
+                            <option id="{{ .Id }}" value="{{ .Id }}">{{ .Description }}</option>
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Ajouter</button>
+            </form>
+        </div>
+    </div>
+</div>
+{{template "footer"}}
