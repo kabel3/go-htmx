@@ -2,32 +2,24 @@ package database
 
 import (
 	"fmt"
+	"kabel/packages/database/models"
 	"kabel/packages/structs"
 
 	_ "modernc.org/sqlite"
 )
 
-func GetFilm(filmId int) structs.Film {
-	var film structs.Film
-
+func GetFilm(filmId int) models.Film {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return structs.Film{}
+		return models.Film{}
 	}
 
-	stmt, err := db.Prepare("SELECT id, title, director, genreId FROM films WHERE id = ?")
+	var film models.Film
+	result := db.First(&film, filmId)
 
-	if err != nil {
-		fmt.Println(err.Error())
-		return structs.Film{}
-	}
-
-	row := stmt.QueryRow(filmId)
-	stmt.Close()
-
-	if err := row.Scan(&film.Id, &film.Title, &film.Director, &film.GenreId); err != nil {
-		fmt.Println(err.Error())
-		return structs.Film{}
+	if result.Error != nil {
+		fmt.Println(result.Error.Error())
+		return models.Film{}
 	}
 
 	return film
@@ -39,78 +31,46 @@ func GetFilms() []structs.Film {
 		return []structs.Film{}
 	}
 
-	rows, err := db.Query("SELECT f.id, title, director, g.description, starred FROM films f INNER JOIN genres g ON g.id = f.genreId")
+	var films []structs.Film
+	err := db.Model(&models.Film{}).Select(`
+		films.id as filmId,
+		films.title as title,
+		films.director as director,
+		films.genre_id as genreId,
+		genres.description as genre
+	`).Joins("INNER JOIN genres ON genres.id = films.genre_id").Scan(&films).Error
+
+	fmt.Println(films)
 
 	if err != nil {
-		fmt.Println(err.Error())
-		return []structs.Film{}
-	}
-
-	defer rows.Close()
-
-	var films []structs.Film
-
-	for rows.Next() {
-		var film structs.Film
-
-		if err := rows.Scan(&film.Id, &film.Title, &film.Director, &film.Genre, &film.Starred); err != nil {
-			fmt.Println(err.Error())
-			return films
-		}
-
-		films = append(films, film)
+		panic(err)
 	}
 
 	return films
 }
 
-func AddFilm(title string, director string, genreId int) structs.Film {
+func AddFilm(title string, director string, genreId uint64) models.Film {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return structs.Film{}
+		return models.Film{}
 	}
 
 	if title == "" || director == "" {
 		fmt.Println("Paramètres manquants pour l'ajout de film")
-		return structs.Film{}
+		return models.Film{}
 	}
 
-	stmt, err := db.Prepare("INSERT INTO films (title, director, genreId) VALUES (?, ?, ?) ")
+	film := models.Film{Title: title, Director: director, GenreId: genreId}
+	result := db.Create(&film)
 
-	if err != nil {
-		fmt.Println(err.Error())
-		return structs.Film{}
+	if result.Error != nil {
+		panic(result.Error.Error())
 	}
-
-	res, err := stmt.Exec(title, director, genreId)
-	stmt.Close()
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return structs.Film{}
-	}
-
-	lastInsertedId, _ := res.LastInsertId()
-
-	var film structs.Film
-
-	film.Id = int(lastInsertedId)
-	film.Title = title
-	film.Director = director
-
-	genre := GetGenre(genreId)
-
-	if genre == (structs.Genre{}) {
-		fmt.Println("Genre de film non-trouvé")
-		return film
-	}
-
-	film.Genre = genre.Description
 
 	return film
 }
 
-func UpdateFilm(filmId int, title string, director string, genreId int) bool {
+func UpdateFilm(filmId uint64, title string, director string, genreId uint64) bool {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -121,68 +81,41 @@ func UpdateFilm(filmId int, title string, director string, genreId int) bool {
 		return false
 	}
 
-	stmt, err := db.Prepare("UPDATE films SET title = ?, director = ?, genreId = ? WHERE id = ?")
+	var film models.Film
+	db.First(&film, filmId)
 
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
+	film.Title = title
+	film.Director = director
+	film.GenreId = genreId
 
-	_, err = stmt.Exec(title, director, genreId, filmId)
-	stmt.Close()
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
+	db.Save(&film)
 
 	return true
 }
 
-func ToggleStarredFilm(filmId int) bool {
+func ToggleStarredFilm(filmId uint64) bool {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
 		return false
 	}
 
-	stmt, err := db.Prepare("UPDATE films SET starred = ((starred | 1) - (starred & 1)) WHERE id = ?")
+	var film models.Film
+	db.First(&film, filmId)
 
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
+	film.Starred = !film.Starred
 
-	_, err = stmt.Exec(filmId)
-	stmt.Close()
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
+	db.Save(&film)
 
 	return true
 }
 
-func RemoveFilm(filmId int) error {
+func RemoveFilm(filmId uint64) error {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
 
-	stmt, err := db.Prepare("DELETE FROM films WHERE id = ?")
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-
-	_, err = stmt.Exec(filmId)
-	stmt.Close()
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
+	db.Delete(&models.Film{}, filmId)
 
 	return nil
 }

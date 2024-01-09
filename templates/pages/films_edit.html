@@ -8,7 +8,7 @@
     <h1 class="px-6 py-4 text-3xl font-bold text-gray-900">Modifier un film</h1>
 
     <form class="px-6 py-4" hx-post="/api/film" hx-boost="true">
-      <input type="hidden" name="id" value="{{ .Film.Id }}">
+      <input type="hidden" name="id" value="{{ .Film.ID }}">
       <div class="mb-3">
         <label for="title" class="block text-sm font-medium leading-6 text-gray-900">Titre</label>
 
@@ -36,7 +36,7 @@
           <select id="genre-list" name="genre"
             class="block w-full rounded-md border-0 py-2 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
             {{ range .Genres }}
-            <option id="{{ .Id }}" value="{{ .Id }}" {{if eq .Id $.Film.GenreId}}selected{{end}}>{{ .Description }}
+            <option id="{{ .ID }}" value="{{ .ID }}" {{if eq .ID $.Film.GenreId}}selected{{end}}>{{ .Description }}
             </option>
             {{ end }}
           </select>

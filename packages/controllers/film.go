@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"kabel/packages/database"
-	"kabel/packages/structs"
+	"kabel/packages/database/models"
 	"net/http"
 	"strconv"
 
@@ -25,7 +25,7 @@ func HandleFilmEdit(c *gin.Context) {
 	film := database.GetFilm(filmId)
 	genres := database.GetGenres()
 
-	if film == (structs.Film{}) {
+	if film == (models.Film{}) {
 		c.Redirect(http.StatusNotFound, "/")
 	} else {
 		c.HTML(http.StatusOK, "films_edit.html", map[string]interface{}{
@@ -49,10 +49,10 @@ func AddFilm(c *gin.Context) {
 	genre := c.PostForm("genre")
 
 	if title != "" && director != "" {
-		genreId, _ := strconv.Atoi(genre)
+		genreId, _ := strconv.ParseUint(genre, 10, 64)
 		film := database.AddFilm(title, director, genreId)
 
-		if film != (structs.Film{}) {
+		if film != (models.Film{}) {
 			c.Header("HX-Trigger", "films-changed")
 		}
 
@@ -66,10 +66,10 @@ func UpdateFilm(c *gin.Context) {
 	director := c.PostForm("director")
 	genre := c.PostForm("genre")
 
-	filmId, _ := strconv.Atoi(id)
+	filmId, _ := strconv.ParseUint(id, 10, 64)
 
 	if title != "" && director != "" {
-		genreId, _ := strconv.Atoi(genre)
+		genreId, _ := strconv.ParseUint(genre, 10, 64)
 
 		if updated := database.UpdateFilm(filmId, title, director, genreId); updated {
 			c.Header("HX-Location", "/")
@@ -78,7 +78,7 @@ func UpdateFilm(c *gin.Context) {
 }
 
 func DeleteFilm(c *gin.Context) {
-	filmId, _ := strconv.Atoi(c.Request.URL.Query().Get("id"))
+	filmId, _ := strconv.ParseUint(c.Request.URL.Query().Get("id"), 10, 64)
 
 	if err := database.RemoveFilm(filmId); err == nil {
 		c.Header("HX-Trigger", "films-changed")
@@ -92,7 +92,7 @@ func DeleteFilm(c *gin.Context) {
 }
 
 func StarFilm(c *gin.Context) {
-	filmId, _ := strconv.Atoi(c.Request.URL.Query().Get("id"))
+	filmId, _ := strconv.ParseUint(c.Request.URL.Query().Get("id"), 10, 64)
 	starred, _ := strconv.ParseBool(c.Request.URL.Query().Get("starred"))
 
 	if updated := database.ToggleStarredFilm(filmId); updated {

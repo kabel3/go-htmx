@@ -1,19 +1,24 @@
 package database
 
 import (
-	"database/sql"
+	"kabel/packages/database/models"
 
 	_ "modernc.org/sqlite"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var databaseURL = "./data/db.sqlite"
-var db *sql.DB
+var db *gorm.DB
 
 func OpenDatabase() error {
 	var err error
 
 	if db == nil {
-		if db, err = sql.Open("sqlite", databaseURL); err != nil {
+		db, err = gorm.Open(sqlite.Open(databaseURL), &gorm.Config{})
+
+		if err != nil {
 			return err
 		}
 	}
@@ -26,23 +31,8 @@ func InitDatabase() error {
 		return err
 	}
 
-	// Création de tables
-	createMoviesTable := `CREATE TABLE IF NOT EXISTS films (
-		id 				INTEGER PRIMARY KEY,
-		title 		TEXT NOT NULL,
-		director	TEXT NOT NULL,
-		genreId 	INTEGER NOT NULL,
-		starred		INTEGER NOT NULL DEFAULT 0 CHECK(starred IN (0,1))
-	)`
+	// Migrations
+	db.AutoMigrate(&models.Film{}, &models.Genre{})
 
-	createGenresTable := `CREATE TABLE IF NOT EXISTS genres (
-		id						INTEGER PRIMARY KEY,
-		description		TEXT NOT NULL,
-		UNIQUE(description)
-	)`
-
-	_, err := db.Exec(createMoviesTable)
-	_, err = db.Exec(createGenresTable)
-
-	return err
+	return nil
 }

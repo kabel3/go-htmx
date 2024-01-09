@@ -2,87 +2,66 @@ package database
 
 import (
 	"fmt"
-	"kabel/packages/structs"
+	"kabel/packages/database/models"
 
+	"errors"
+
+	"gorm.io/gorm"
 	_ "modernc.org/sqlite"
 )
 
 func SeedDefaultGenres() error {
-	if err := OpenDatabase(); err != nil {
+	var err error
+
+	if err = OpenDatabase(); err != nil {
 		return err
 	}
 
-	_, err := db.Exec(`
-		INSERT OR IGNORE INTO genres (description) VALUES ('Action');
-		INSERT OR IGNORE INTO genres (description) VALUES ('Romance');
-		INSERT OR IGNORE INTO genres (description) VALUES ('Crime');
-		INSERT OR IGNORE INTO genres (description) VALUES ('Suspense');
-		INSERT OR IGNORE INTO genres (description) VALUES ('Aventure');
-		INSERT OR IGNORE INTO genres (description) VALUES ('Fantaisie');
-		INSERT OR IGNORE INTO genres (description) VALUES ('Science-fiction');	
-		INSERT OR IGNORE INTO genres (description) VALUES ('Horreur');	
-	`)
+	if err = db.AutoMigrate(&models.Genre{}); err == nil && db.Migrator().HasTable(&models.Genre{}) {
+		if err := db.First(&models.Genre{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			db.Create(&models.Genre{Description: "Action"})
+			db.Create(&models.Genre{Description: "Romance"})
+			db.Create(&models.Genre{Description: "Crime"})
+			db.Create(&models.Genre{Description: "Suspense"})
+			db.Create(&models.Genre{Description: "Aventure"})
+			db.Create(&models.Genre{Description: "Fantaisie"})
+			db.Create(&models.Genre{Description: "Science-fiction"})
+			db.Create(&models.Genre{Description: "Horreur"})
+		}
+	}
 
-	return err
+	return nil
 }
 
-func GetGenres() []structs.Genre {
+func GetGenres() []models.Genre {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return []structs.Genre{}
+		return []models.Genre{}
 	}
 
-	rows, err := db.Query("SELECT id, description FROM genres")
+	var genres []models.Genre
+	result := db.Find(&genres)
 
-	if err != nil {
-		fmt.Println(err.Error())
-		return []structs.Genre{}
-	}
-
-	defer rows.Close()
-
-	var genres []structs.Genre
-
-	for rows.Next() {
-		var genre structs.Genre
-
-		if err := rows.Scan(&genre.Id, &genre.Description); err != nil {
-			fmt.Println(err.Error())
-			return genres
-		}
-
-		genres = append(genres, genre)
-	}
-
-	if err = rows.Err(); err != nil {
-		fmt.Println(err.Error())
-		return genres
+	if result.Error != nil {
+		fmt.Println(result.Error.Error())
+		return []models.Genre{}
 	}
 
 	return genres
 }
 
-func GetGenre(genreId int) structs.Genre {
-	var genre structs.Genre
-
+func GetGenre(genreId int) models.Genre {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return structs.Genre{}
+		return models.Genre{}
 	}
 
-	stmt, err := db.Prepare("SELECT id, description FROM genres WHERE id = ?")
+	var genre models.Genre
+	result := db.First(&genre, genreId)
 
-	if err != nil {
-		fmt.Println(err.Error())
-		return structs.Genre{}
-	}
-
-	row := stmt.QueryRow(genreId)
-	stmt.Close()
-
-	if err := row.Scan(&genre.Id, &genre.Description); err != nil {
-		fmt.Println(err.Error())
-		return structs.Genre{}
+	if result.Error != nil {
+		fmt.Println(result.Error.Error())
+		return models.Genre{}
 	}
 
 	return genre
