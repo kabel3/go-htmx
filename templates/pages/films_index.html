@@ -61,7 +61,7 @@
             <td class="px-6 py-4">{{ .Genre }}</td>
             <td class="px-6 py-4">
               <div class="flex justify-end gap-4">
-                <button hx-get="/film?id={{ .Id }}" hx-replace-url="true" hx-push-url="true" hx-boost="true"
+                <button hx-get="/film?id={{ .Id }}" hx-replace-url="true" hx-push-url="true"
                   hx-target="#content" hx-swap="outerHTML">
                   <img src="/static/assets/create-outline.svg" class="h-6 w-6"/>
                 </button>

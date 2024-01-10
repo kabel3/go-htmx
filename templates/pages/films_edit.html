@@ -2,12 +2,12 @@
 
 {{template "header"}}
 <div class="container m-auto">
-  <a class="underline text-base" href="/" hx-boost="true">Retour à l'index</a>
+  <a class="underline text-base" href="/">Retour à l'index</a>
 
   <div class="p-8 my-4 bg-white border">
     <h1 class="px-6 py-4 text-3xl font-bold text-gray-900">Modifier un film</h1>
 
-    <form class="px-6 py-4" hx-post="/api/film" hx-boost="true">
+    <form class="px-6 py-4" hx-post="/api/film">
       <input type="hidden" name="id" value="{{ .Film.Id }}">
       <div class="mb-3">
         <label for="title" class="block text-sm font-medium leading-6 text-gray-900">Titre</label>
