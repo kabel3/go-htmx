@@ -58,7 +58,7 @@ func SearchFilms(keyword string) []structs.Film {
 	}
 
 	var films []structs.Film
-	err := db..Model(&models.Film{}).Select(`
+	err := db.Model(&models.Film{}).Select(`
 		films.id as Id,
 		films.title as Title,
 		films.director as Director,
