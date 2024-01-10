@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"kabel/packages/database/models"
 	"kabel/packages/structs"
-
-	_ "modernc.org/sqlite"
 )
 
-func GetFilm(filmId int) models.Film {
+func GetFilm(filmId uint) structs.Film {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return models.Film{}
+		return structs.Film{}
 	}
 
 	var film models.Film
@@ -19,10 +17,15 @@ func GetFilm(filmId int) models.Film {
 
 	if result.Error != nil {
 		fmt.Println(result.Error.Error())
-		return models.Film{}
+		return structs.Film{}
 	}
 
-	return film
+	return structs.Film{
+		Id:       film.ID,
+		Title:    film.Title,
+		Director: film.Director,
+		GenreId:  film.GenreId,
+	}
 }
 
 func GetFilms() []structs.Film {
@@ -33,14 +36,13 @@ func GetFilms() []structs.Film {
 
 	var films []structs.Film
 	err := db.Model(&models.Film{}).Select(`
-		films.id as filmId,
-		films.title as title,
-		films.director as director,
-		films.genre_id as genreId,
-		genres.description as genre
+		films.id as Id,
+		films.title as Title,
+		films.director as Director,
+		films.genre_id as GenreId,
+		genres.description as Genre,
+		films.starred as Starred
 	`).Joins("INNER JOIN genres ON genres.id = films.genre_id").Scan(&films).Error
-
-	fmt.Println(films)
 
 	if err != nil {
 		panic(err)
@@ -49,15 +51,15 @@ func GetFilms() []structs.Film {
 	return films
 }
 
-func AddFilm(title string, director string, genreId uint64) models.Film {
+func AddFilm(title string, director string, genreId uint) structs.Film {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return models.Film{}
+		return structs.Film{}
 	}
 
 	if title == "" || director == "" {
 		fmt.Println("Paramètres manquants pour l'ajout de film")
-		return models.Film{}
+		return structs.Film{}
 	}
 
 	film := models.Film{Title: title, Director: director, GenreId: genreId}
@@ -67,10 +69,19 @@ func AddFilm(title string, director string, genreId uint64) models.Film {
 		panic(result.Error.Error())
 	}
 
-	return film
+	var genre models.Genre
+	db.First(&genre, genreId)
+
+	return structs.Film{
+		Id:       film.ID,
+		Title:    film.Title,
+		Director: film.Director,
+		Genre:    genre.Description,
+		GenreId:  genre.ID,
+	}
 }
 
-func UpdateFilm(filmId uint64, title string, director string, genreId uint64) bool {
+func UpdateFilm(filmId uint, title string, director string, genreId uint) bool {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -93,7 +104,7 @@ func UpdateFilm(filmId uint64, title string, director string, genreId uint64) bo
 	return true
 }
 
-func ToggleStarredFilm(filmId uint64) bool {
+func ToggleStarredFilm(filmId uint) bool {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -109,7 +120,7 @@ func ToggleStarredFilm(filmId uint64) bool {
 	return true
 }
 
-func RemoveFilm(filmId uint64) error {
+func RemoveFilm(filmId uint) error {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
 		return err
@@ -118,4 +129,32 @@ func RemoveFilm(filmId uint64) error {
 	db.Delete(&models.Film{}, filmId)
 
 	return nil
+}
+
+func GetMostPopularGenres() string {
+	if err := OpenDatabase(); err != nil {
+		panic(err.Error())
+	}
+
+	var genre string
+
+	subQuery := db.Model(&models.Film{}).Select(`
+		films.genre_id as GenreId,
+		genres.description as Description,
+		COUNT(1) as GenreCount
+	`).Joins(`
+		INNER JOIN genres ON genres.id = films.genre_id
+	`).Group("films.genre_id").Where("films.starred = 1")
+
+	var maxCount int
+
+	db.Table("(?)", subQuery).Select("COALESCE(MAX(GenreCount), 0)").Scan(&maxCount)
+
+	if maxCount == 0 {
+		return "-"
+	}
+
+	db.Table("(?)", subQuery).Select("GROUP_CONCAT(Description, ', ')").Where("GenreCount = ?", maxCount).Scan(&genre)
+
+	return genre
 }

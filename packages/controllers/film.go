@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"kabel/packages/database"
-	"kabel/packages/database/models"
+	"kabel/packages/structs"
 	"net/http"
 	"strconv"
 
@@ -13,19 +13,20 @@ func HandleFilmIndex(c *gin.Context) {
 	films := database.GetFilms()
 
 	c.HTML(http.StatusOK, "films_index.html", map[string]interface{}{
-		"Films":  films,
-		"Genres": database.GetGenres(),
-		"Count":  len(films),
+		"Films":          films,
+		"Genres":         database.GetGenres(),
+		"Count":          len(films),
+		"FavoriteGenres": database.GetMostPopularGenres(),
 	})
 }
 
 func HandleFilmEdit(c *gin.Context) {
 	filmId, _ := strconv.Atoi(c.Request.URL.Query().Get("id"))
 
-	film := database.GetFilm(filmId)
+	film := database.GetFilm(uint(filmId))
 	genres := database.GetGenres()
 
-	if film == (models.Film{}) {
+	if film == (structs.Film{}) {
 		c.Redirect(http.StatusNotFound, "/")
 	} else {
 		c.HTML(http.StatusOK, "films_edit.html", map[string]interface{}{
@@ -33,6 +34,12 @@ func HandleFilmEdit(c *gin.Context) {
 			"Genres": genres,
 		})
 	}
+}
+
+func GetFavoriteGenres(c *gin.Context) {
+	c.HTML(http.StatusOK, "favorite-genres", map[string]interface{}{
+		"FavoriteGenres": database.GetMostPopularGenres(),
+	})
 }
 
 func GetFilmCount(c *gin.Context) {
@@ -49,10 +56,10 @@ func AddFilm(c *gin.Context) {
 	genre := c.PostForm("genre")
 
 	if title != "" && director != "" {
-		genreId, _ := strconv.ParseUint(genre, 10, 64)
-		film := database.AddFilm(title, director, genreId)
+		genreId, _ := strconv.Atoi(genre)
+		film := database.AddFilm(title, director, uint(genreId))
 
-		if film != (models.Film{}) {
+		if film != (structs.Film{}) {
 			c.Header("HX-Trigger", "films-changed")
 		}
 
@@ -66,21 +73,21 @@ func UpdateFilm(c *gin.Context) {
 	director := c.PostForm("director")
 	genre := c.PostForm("genre")
 
-	filmId, _ := strconv.ParseUint(id, 10, 64)
+	filmId, _ := strconv.Atoi(id)
 
 	if title != "" && director != "" {
-		genreId, _ := strconv.ParseUint(genre, 10, 64)
+		genreId, _ := strconv.Atoi(genre)
 
-		if updated := database.UpdateFilm(filmId, title, director, genreId); updated {
+		if updated := database.UpdateFilm(uint(filmId), title, director, uint(genreId)); updated {
 			c.Header("HX-Location", "/")
 		}
 	}
 }
 
 func DeleteFilm(c *gin.Context) {
-	filmId, _ := strconv.ParseUint(c.Request.URL.Query().Get("id"), 10, 64)
+	filmId, _ := strconv.Atoi(c.Request.URL.Query().Get("id"))
 
-	if err := database.RemoveFilm(filmId); err == nil {
+	if err := database.RemoveFilm(uint(filmId)); err == nil {
 		c.Header("HX-Trigger", "films-changed")
 	}
 
@@ -92,10 +99,12 @@ func DeleteFilm(c *gin.Context) {
 }
 
 func StarFilm(c *gin.Context) {
-	filmId, _ := strconv.ParseUint(c.Request.URL.Query().Get("id"), 10, 64)
+	filmId, _ := strconv.Atoi(c.Request.URL.Query().Get("id"))
 	starred, _ := strconv.ParseBool(c.Request.URL.Query().Get("starred"))
 
-	if updated := database.ToggleStarredFilm(filmId); updated {
+	if updated := database.ToggleStarredFilm(uint(filmId)); updated {
+		c.Header("HX-Trigger", "films-changed")
+
 		c.HTML(http.StatusOK, "film-starred", gin.H{
 			"Id":      filmId,
 			"Starred": starred,

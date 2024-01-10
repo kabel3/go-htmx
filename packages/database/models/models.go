@@ -8,7 +8,7 @@ type Film struct {
 	gorm.Model
 	Title    string
 	Director string
-	GenreId  uint64
+	GenreId  uint
 	Starred  bool
 }
 

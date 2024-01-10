@@ -1,16 +1,16 @@
 package structs
 
 type Film struct {
-	Id       int
+	Id       uint
 	Title    string
 	Director string
 	Genre    string
-	GenreId  int
+	GenreId  uint
 	Starred  bool
 }
 
 type Genre struct {
-	Id          int
+	Id          uint
 	Description string
 }
 

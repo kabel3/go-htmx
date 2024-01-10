@@ -3,11 +3,11 @@ package database
 import (
 	"fmt"
 	"kabel/packages/database/models"
+	"kabel/packages/structs"
 
 	"errors"
 
 	"gorm.io/gorm"
-	_ "modernc.org/sqlite"
 )
 
 func SeedDefaultGenres() error {
@@ -33,27 +33,27 @@ func SeedDefaultGenres() error {
 	return nil
 }
 
-func GetGenres() []models.Genre {
+func GetGenres() []structs.Genre {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return []models.Genre{}
+		return []structs.Genre{}
 	}
 
-	var genres []models.Genre
-	result := db.Find(&genres)
+	var genres []structs.Genre
+	result := db.Model(&models.Genre{}).Scan(&genres)
 
 	if result.Error != nil {
 		fmt.Println(result.Error.Error())
-		return []models.Genre{}
+		return []structs.Genre{}
 	}
 
 	return genres
 }
 
-func GetGenre(genreId int) models.Genre {
+func GetGenre(genreId uint) structs.Genre {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())
-		return models.Genre{}
+		return structs.Genre{}
 	}
 
 	var genre models.Genre
@@ -61,8 +61,11 @@ func GetGenre(genreId int) models.Genre {
 
 	if result.Error != nil {
 		fmt.Println(result.Error.Error())
-		return models.Genre{}
+		return structs.Genre{}
 	}
 
-	return genre
+	return structs.Genre{
+		Id:          genre.ID,
+		Description: genre.Description,
+	}
 }

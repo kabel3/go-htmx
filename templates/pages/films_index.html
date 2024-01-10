@@ -5,7 +5,7 @@
   <div class="flex flex-wrap gap-2">
     <div class="p-8 my-4 basis-3/5 bg-white border">
       <div class="px-6 py-4">
-        <h1 class="text-3xl font-bold text-gray-900">
+        <h1 class="text-3xl mb-3 font-bold text-gray-900">
           Liste de films
           <span hx-get="api/films/count" hx-trigger="films-changed from:body" hx-target="this" hx-swap="innerHTML">
             {{ block "film-count" . }}
@@ -13,8 +13,16 @@
             {{ end }}
           </span>
         </h1>
+        
+        <h2 class="text-gray-800">
+          Genres préférés:
+          <span hx-get="api/films/favorite-genres" hx-trigger="films-changed from:body" hx-target="this" hx-swap="innerHTML">
+            {{ block "favorite-genres" . }}
+            {{ .FavoriteGenres }}
+            {{ end }}
+          </span>
+        </h2>
       </div>
-
 
       {{ block "film-list" . }}
       <table class="w-full border-collapse bg-white text-left text-sm text-gray-700" id="film-table">

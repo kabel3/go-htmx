@@ -3,8 +3,6 @@ package database
 import (
 	"kabel/packages/database/models"
 
-	_ "modernc.org/sqlite"
-
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
