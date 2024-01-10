@@ -4,24 +4,40 @@
 <div class="container mx-auto">
   <div class="flex flex-wrap gap-2">
     <div class="p-8 my-4 basis-3/5 bg-white border">
-      <div class="px-6 py-4">
-        <h1 class="text-3xl mb-3 font-bold text-gray-900">
-          Liste de films
-          <span hx-get="api/films/count" hx-trigger="films-changed from:body" hx-target="this" hx-swap="innerHTML">
-            {{ block "film-count" . }}
-            ({{ .Count }})
-            {{ end }}
-          </span>
-        </h1>
-        
-        <h2 class="text-gray-800">
-          Genres préférés:
-          <span hx-get="api/films/favorite-genres" hx-trigger="films-changed from:body" hx-target="this" hx-swap="innerHTML">
-            {{ block "favorite-genres" . }}
-            {{ .FavoriteGenres }}
-            {{ end }}
-          </span>
-        </h2>
+      <div class="flex px-6 py-4 justify-between">
+        <div>
+          <h1 class="text-3xl mb-3 font-bold text-gray-900">
+            Liste de films
+            <span hx-get="api/films/count" hx-trigger="films-changed from:body" hx-target="this" hx-swap="innerHTML">
+              {{ block "film-count" . }}
+              ({{ .Count }})
+              {{ end }}
+            </span>
+          </h1>
+
+          <h2 class="text-gray-800">
+            Genres préférés:
+            <span hx-get="api/films/favorite-genres" hx-trigger="films-changed from:body" hx-target="this"
+              hx-swap="innerHTML">
+              {{ block "favorite-genres" . }}
+              {{ .FavoriteGenres }}
+              {{ end }}
+            </span>
+          </h2>
+        </div>
+
+        <div>
+          <div class="relative rounded-md shadow-sm">
+            <label for="keyword" class="block text-sm font-medium leading-6 text-gray-900">Rechercher un film</label>
+
+            <input type="search" name="keyword"
+              class="block mt-2 w-full rounded-md border-0 py-2 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              hx-get="api/films/search"
+              hx-trigger="keyup changed delay:500ms"
+              hx-target="#film-table"
+              hx-swap="innerHTML">
+          </div>
+        </div>
       </div>
 
       {{ block "film-list" . }}
@@ -45,12 +61,12 @@
                 {{if .Starred}}
                 <div hx-post="/api/film/star?id={{ .Id }}&starred=false" hx-trigger="click" hx-target="this"
                   hx-swap="outerHTML">
-                  <img src="/static/assets/star.svg" class="h-6 w-6"/>
+                  <img src="/static/assets/star.svg" class="h-6 w-6" />
                 </div>
                 {{else}}
                 <div hx-post="/api/film/star?id={{ .Id }}&starred=true" hx-trigger="click" hx-target="this"
                   hx-swap="outerHTML">
-                  <img src="/static/assets/star-outline.svg" class="h-6 w-6"/>
+                  <img src="/static/assets/star-outline.svg" class="h-6 w-6" />
                 </div>
                 {{end}}
                 {{end}}
@@ -61,13 +77,13 @@
             <td class="px-6 py-4">{{ .Genre }}</td>
             <td class="px-6 py-4">
               <div class="flex justify-end gap-4">
-                <button hx-get="/film?id={{ .Id }}" hx-replace-url="true" hx-push-url="true"
-                  hx-target="#content" hx-swap="outerHTML">
-                  <img src="/static/assets/create-outline.svg" class="h-6 w-6"/>
+                <button hx-get="/film?id={{ .Id }}" hx-replace-url="true" hx-push-url="true" hx-target="#content"
+                  hx-swap="outerHTML">
+                  <img src="/static/assets/create-outline.svg" class="h-6 w-6" />
                 </button>
                 <button hx-delete="api/film?id={{ .Id }}" hx-confirm="Êtes-vous sûr?" hx-target="#film-table"
                   hx-swap="innerHTML">
-                  <img src="/static/assets/trash-outline.svg" class="h-6 w-6"/>
+                  <img src="/static/assets/trash-outline.svg" class="h-6 w-6" />
                 </button>
               </div>
             </td>

@@ -50,6 +50,15 @@ func GetFilmCount(c *gin.Context) {
 	})
 }
 
+func SearchFilms(c *gin.Context) {
+	keyword := c.Request.URL.Query().Get("keyword")
+	films := database.SearchFilms(keyword)
+
+	c.HTML(http.StatusOK, "film-list", map[string]interface{}{
+		"Films": films,
+	})
+}
+
 func AddFilm(c *gin.Context) {
 	title := c.PostForm("title")
 	director := c.PostForm("director")

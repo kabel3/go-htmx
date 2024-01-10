@@ -51,6 +51,33 @@ func GetFilms() []structs.Film {
 	return films
 }
 
+func SearchFilms(keyword string) []structs.Film {
+	if err := OpenDatabase(); err != nil {
+		fmt.Println(err.Error())
+		return []structs.Film{}
+	}
+
+	var films []structs.Film
+	err := db..Model(&models.Film{}).Select(`
+		films.id as Id,
+		films.title as Title,
+		films.director as Director,
+		films.genre_id as GenreId,
+		genres.description as Genre,
+		films.starred as Starred
+	`).Joins("INNER JOIN genres ON genres.id = films.genre_id").Where(`(
+		films.title LIKE ?
+		OR films.director LIKE ?
+		OR genres.description LIKE ?
+	)`, "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%").Scan(&films).Error
+
+	if err != nil {
+		panic(err)
+	}
+
+	return films
+}
+
 func AddFilm(title string, director string, genreId uint) structs.Film {
 	if err := OpenDatabase(); err != nil {
 		fmt.Println(err.Error())

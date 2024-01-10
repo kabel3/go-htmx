@@ -37,6 +37,7 @@ func main() {
 
 	r.GET("/api/films/count", controllers.GetFilmCount)
 	r.GET("/api/films/favorite-genres", controllers.GetFavoriteGenres)
+	r.GET("/api/films/search", controllers.SearchFilms)
 
 	r.PUT("/api/film", controllers.AddFilm)
 	r.POST("/api/film", controllers.UpdateFilm)
