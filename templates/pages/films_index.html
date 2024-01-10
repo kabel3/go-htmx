@@ -17,7 +17,7 @@
 
           <h2 class="text-gray-800">
             Genres préférés:
-            <span hx-get="api/films/favorite-genres" hx-trigger="films-changed from:body" hx-target="this"
+            <span hx-get="api/films/favorite-genres" hx-trigger="favorites-changed from:body" hx-target="this"
               hx-swap="innerHTML">
               {{ block "favorite-genres" . }}
               {{ .FavoriteGenres }}

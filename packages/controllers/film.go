@@ -97,7 +97,7 @@ func DeleteFilm(c *gin.Context) {
 	filmId, _ := strconv.Atoi(c.Request.URL.Query().Get("id"))
 
 	if err := database.RemoveFilm(uint(filmId)); err == nil {
-		c.Header("HX-Trigger", "films-changed")
+		c.Header("HX-Trigger", "films-changed, favorites-changed")
 	}
 
 	films := database.GetFilms()
@@ -112,7 +112,7 @@ func StarFilm(c *gin.Context) {
 	starred, _ := strconv.ParseBool(c.Request.URL.Query().Get("starred"))
 
 	if updated := database.ToggleStarredFilm(uint(filmId)); updated {
-		c.Header("HX-Trigger", "films-changed")
+		c.Header("HX-Trigger", "favorites-changed")
 
 		c.HTML(http.StatusOK, "film-starred", gin.H{
 			"Id":      filmId,
